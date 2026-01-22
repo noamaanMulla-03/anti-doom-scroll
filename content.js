@@ -13,13 +13,15 @@
   let enabledSites = {};
   let timeLimit = 0; // 0 means no limit, otherwise in minutes
   let breakInterval = 0; // 0 means no reminders, otherwise in minutes
+  let soundEnabled = false;
 
   // Load settings
   chrome.storage.sync.get([
     'enabled', 
     'enabledSites',
     'timeLimit',
-    'breakInterval'
+    'breakInterval',
+    'soundEnabled'
   ], (result) => {
     enabled = result.enabled !== false;
     enabledSites = result.enabledSites || {
@@ -32,6 +34,7 @@
     };
     timeLimit = result.timeLimit || 0;
     breakInterval = result.breakInterval || 0;
+    soundEnabled = result.soundEnabled || false;
     
     if (enabled) init();
   });
@@ -54,6 +57,9 @@
     }
     if (changes.breakInterval) {
       breakInterval = changes.breakInterval.newValue;
+    }
+    if (changes.soundEnabled) {
+      soundEnabled = changes.soundEnabled.newValue;
     }
   });
 
@@ -163,6 +169,32 @@
     return false;
   }
 
+  function playBlockSound() {
+    if (!soundEnabled) return;
+    
+    // Create a short "boop" sound using Web Audio API
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 400; // Frequency in Hz
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+      // Silently fail if audio isn't available
+      console.log('Audio feedback unavailable');
+    }
+  }
+
   function blockScroll(e) {
     if (!enabled || !isInMediaView() || isSnoozeActive()) return;
     
@@ -180,6 +212,9 @@
         const currentCount = result.blockedCount || 0;
         chrome.storage.sync.set({ blockedCount: currentCount + 1 });
       });
+      
+      // Play sound feedback
+      playBlockSound();
       
       if (blockedScrollAttempts === 1) {
         showNotification();

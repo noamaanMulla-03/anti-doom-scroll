@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to Anti-Doom Scroll</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .step {
+      display: none;
+      animation: fadeIn 0.4s ease-in;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .icon {
+      font-size: 80px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      opacity: 0.9;
+      text-align: center;
+    }
+
+    .features {
+      margin: 30px 0;
+    }
+
+    .feature {
+      display: flex;
+      align-items: start;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+
+    .feature-content h3 {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .feature-content p {
+      font-size: 14px;
+      opacity: 0.8;
+      text-align: left;
+      margin: 0;
+    }
+
+    .site-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .site-card {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .site-card.selected {
+      background: rgba(76, 175, 80, 0.3);
+      border-color: rgba(76, 175, 80, 0.8);
+    }
+
+    .site-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .site-card .site-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .site-card .site-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .dot.active {
+      background: white;
+      width: 30px;
+      border-radius: 5px;
+    }
+
+    .settings-grid {
+      display: grid;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .setting-item {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .setting-label {
+      font-size: 14px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    input[type="number"], input[type="checkbox"] {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      height: 24px;
+      width: 24px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Step 1: Welcome -->
+    <div class="step active" data-step="1">
+      <div class="icon">🛑</div>
+      <h1>Welcome to Anti-Doom Scroll!</h1>
+      <p>Take back control of your time and break free from endless scrolling.</p>
+      
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-content">
+            <h3>Smart Blocking</h3>
+            <p>Blocks scrolling on individual posts while keeping feeds accessible</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">⏰</div>
+          <div class="feature-content">
+            <h3>Time Management</h3>
+            <p>Set time limits and get break reminders to stay healthy</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📊</div>
+          <div class="feature-content">
+            <h3>Usage Analytics</h3>
+            <p>Track your time spent on each platform daily</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn-primary" onclick="nextStep()">Get Started →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Choose Platforms -->
+    <div class="step" data-step="2">
+      <div class="icon">📱</div>
+      <h2>Choose Your Platforms</h2>
+      <p>Select which social media platforms you want to protect yourself from</p>
+
+      <div class="site-grid">
+        <div class="site-card selected" data-site="instagram">
+          <div class="site-icon">📷</div>
+          <div class="site-name">Instagram</div>
+        </div>
+        <div class="site-card selected" data-site="tiktok">
+          <div class="site-icon">🎵</div>
+          <div class="site-name">TikTok</div>
+        </div>
+        <div class="site-card selected" data-site="youtube">
+          <div class="site-icon">📺</div>
+          <div class="site-name">YouTube</div>
+        </div>
+        <div class="site-card selected" data-site="facebook">
+          <div class="site-icon">👥</div>
+          <div class="site-name">Facebook</div>
+        </div>
+        <div class="site-card selected" data-site="twitter">
+          <div class="site-icon">🐦</div>
+          <div class="site-name">Twitter/X</div>
+        </div>
+        <div class="site-card selected" data-site="reddit">
+          <div class="site-icon">🔴</div>
+          <div class="site-name">Reddit</div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn-secondary" onclick="prevStep()">← Back</button>
+        <button class="btn-primary" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Configure Settings -->
+    <div class="step" data-step="3">
+      <div class="icon">⚙️</div>
+      <h2>Configure Your Preferences</h2>
+      <p>Set up time limits and preferences (you can change these later)</p>
+
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label class="setting-label">⏱️ Session time limit (minutes, 0 = no limit)</label>
+          <input type="number" id="onboarding-timeLimit" min="0" value="15" placeholder="15">
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">🧘 Break reminder interval (minutes, 0 = off)</label>
+          <input type="number" id="onboarding-breakInterval" min="0" value="30" placeholder="30">
+        </div>
+        <div class="setting-item">
+          <div class="checkbox-wrapper">
+            <input type="checkbox" id="onboarding-sound">
+            <label class="setting-label" style="margin: 0;">🔊 Enable sound feedback</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn-secondary" onclick="prevStep()">← Back</button>
+        <button class="btn-primary" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: All Set -->
+    <div class="step" data-step="4">
+      <div class="icon">🎉</div>
+      <h1>You're All Set!</h1>
+      <p>Anti-Doom Scroll is now protecting you from endless scrolling.</p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">✨</div>
+          <div class="feature-content">
+            <h3>How It Works</h3>
+            <p>Browse feeds freely, but when you open a post, scrolling is blocked. Close the post to continue browsing.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">⏸️</div>
+          <div class="feature-content">
+            <h3>Need a Break?</h3>
+            <p>Use the "Snooze 5 min" button when scrolling is blocked for temporary access.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎛️</div>
+          <div class="feature-content">
+            <h3>Customize Anytime</h3>
+            <p>Click the extension icon to adjust settings, view stats, or disable specific platforms.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn-primary" onclick="finish()">Start Using →</button>
+      </div>
+    </div>
+
+    <!-- Progress Dots -->
+    <div class="progress-dots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <script src="onboarding.js"></script>
+</body>
+</html>

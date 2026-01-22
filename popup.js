@@ -3,6 +3,7 @@ const toggle = document.getElementById('enableToggle');
 const scrollsBlocked = document.getElementById('scrollsBlocked');
 const timeLimitInput = document.getElementById('timeLimit');
 const breakIntervalInput = document.getElementById('breakInterval');
+const soundToggle = document.getElementById('soundToggle');
 const analyticsContainer = document.getElementById('analytics');
 const siteToggles = document.querySelectorAll('.site-toggle');
 
@@ -13,12 +14,14 @@ chrome.storage.sync.get([
   'enabledSites',
   'timeLimit',
   'breakInterval',
+  'soundEnabled',
   'analytics'
 ], (result) => {
   toggle.checked = result.enabled !== false;
   scrollsBlocked.textContent = result.blockedCount || 0;
   timeLimitInput.value = result.timeLimit || 0;
   breakIntervalInput.value = result.breakInterval || 0;
+  soundToggle.checked = result.soundEnabled || false;
   
   // Load site-specific settings
   const enabledSites = result.enabledSites || {
@@ -75,6 +78,12 @@ timeLimitInput.addEventListener('change', () => {
 breakIntervalInput.addEventListener('change', () => {
   const breakInterval = parseInt(breakIntervalInput.value) || 0;
   chrome.storage.sync.set({ breakInterval });
+});
+
+// Handle sound toggle changes
+soundToggle.addEventListener('change', () => {
+  const soundEnabled = soundToggle.checked;
+  chrome.storage.sync.set({ soundEnabled });
 });
 
 // Display analytics data

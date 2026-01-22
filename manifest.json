@@ -3,7 +3,13 @@
   "name": "Anti-Doom Scroll",
   "version": "1.0",
   "description": "Prevents endless scrolling through social media posts",
-  "permissions": ["storage"],
+  "permissions": ["storage", "alarms"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [
