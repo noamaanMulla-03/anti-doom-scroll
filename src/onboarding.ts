@@ -122,19 +122,24 @@ function prevStep(): void {
 /**
  * Sets up site card click handlers
  * Allows users to toggle sites they want to block
+ * Improved with validation and error handling
  */
 function setupSiteSelection(): void {
     const siteCards = document.querySelectorAll<HTMLDivElement>('.site-card');
 
     siteCards.forEach((card: HTMLDivElement): void => {
         card.addEventListener('click', (): void => {
-            const site = card.dataset.site as keyof EnabledSites;
+            const site = card.dataset.site as keyof EnabledSites | undefined;
 
-            if (site) {
-                // Toggle selection state
-                card.classList.toggle('selected');
-                state.selectedSites[site] = card.classList.contains('selected');
+            // Validate site name
+            if (!site || !(site in state.selectedSites)) {
+                console.warn('[Anti-Doom Scroll] Invalid site card:', card);
+                return;
             }
+
+            // Toggle selection state
+            card.classList.toggle('selected');
+            state.selectedSites[site] = card.classList.contains('selected');
         });
     });
 }
@@ -145,17 +150,18 @@ function setupSiteSelection(): void {
 
 /**
  * Collects all onboarding settings from form inputs
+ * Validates inputs and provides safe defaults
  * @returns Settings object ready for storage
  */
 function collectSettings() {
-    // Get input elements
-    const timeLimitInput = document.getElementById('onboarding-timeLimit') as HTMLInputElement;
-    const breakIntervalInput = document.getElementById('onboarding-breakInterval') as HTMLInputElement;
-    const soundInput = document.getElementById('onboarding-sound') as HTMLInputElement;
+    // Get input elements with null checks
+    const timeLimitInput = document.getElementById('onboarding-timeLimit') as HTMLInputElement | null;
+    const breakIntervalInput = document.getElementById('onboarding-breakInterval') as HTMLInputElement | null;
+    const soundInput = document.getElementById('onboarding-sound') as HTMLInputElement | null;
 
-    // Parse and validate inputs
-    const timeLimit = parseInt(timeLimitInput?.value || '0') || 0;
-    const breakInterval = parseInt(breakIntervalInput?.value || '0') || 0;
+    // Parse and validate inputs with proper bounds checking
+    const timeLimit = Math.max(0, parseInt(timeLimitInput?.value || '0') || 0);
+    const breakInterval = Math.max(0, parseInt(breakIntervalInput?.value || '0') || 0);
     const soundEnabled = soundInput?.checked || false;
 
     return {
@@ -173,17 +179,35 @@ function collectSettings() {
 /**
  * Completes onboarding process
  * Saves settings and closes tab
+ * Includes error handling and user feedback
  */
 function finish(): void {
-    const settings = collectSettings();
+    try {
+        const settings = collectSettings();
 
-    // Save all settings to storage
-    chrome.storage.sync.set(settings, () => {
-        console.log('[Anti-Doom Scroll] Onboarding completed successfully');
+        // Save all settings to storage with error handling
+        chrome.storage.sync.set(settings, () => {
+            if (chrome.runtime.lastError) {
+                console.error('[Anti-Doom Scroll] Failed to save onboarding settings:', chrome.runtime.lastError);
+                alert('Failed to save settings. Please try again.');
+                return;
+            }
 
-        // Close onboarding tab
-        window.close();
-    });
+            console.log('[Anti-Doom Scroll] Onboarding completed successfully');
+
+            // Close onboarding tab
+            try {
+                window.close();
+            } catch (err) {
+                console.error('[Anti-Doom Scroll] Failed to close onboarding tab:', err);
+                // If window.close() fails, show success message
+                alert('Setup complete! You can now close this tab.');
+            }
+        });
+    } catch (error) {
+        console.error('[Anti-Doom Scroll] Error during onboarding finish:', error);
+        alert('An error occurred. Please try again.');
+    }
 }
 
 // ============================================
@@ -192,24 +216,31 @@ function finish(): void {
 
 /**
  * Sets up navigation button click handlers
- * Scans document for buttons and attaches appropriate handlers
+ * Uses event delegation for better performance and memory management
  */
 function setupNavigationButtons(): void {
-    // Next buttons
-    document.querySelectorAll<HTMLButtonElement>('.btn-next').forEach(btn => {
-        btn.addEventListener('click', nextStep);
-    });
+    // Use event delegation on document to avoid multiple listeners
+    document.addEventListener('click', (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
 
-    // Back buttons
-    document.querySelectorAll<HTMLButtonElement>('.btn-back').forEach(btn => {
-        btn.addEventListener('click', prevStep);
-    });
+        // Handle next buttons
+        if (target.classList.contains('btn-next') || target.closest('.btn-next')) {
+            e.preventDefault();
+            nextStep();
+        }
 
-    // Finish button
-    const finishBtn = document.querySelector<HTMLButtonElement>('.btn-finish');
-    if (finishBtn) {
-        finishBtn.addEventListener('click', finish);
-    }
+        // Handle back buttons
+        else if (target.classList.contains('btn-back') || target.closest('.btn-back')) {
+            e.preventDefault();
+            prevStep();
+        }
+
+        // Handle finish button
+        else if (target.classList.contains('btn-finish') || target.closest('.btn-finish')) {
+            e.preventDefault();
+            finish();
+        }
+    });
 }
 
 // ============================================

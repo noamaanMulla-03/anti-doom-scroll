@@ -55,6 +55,7 @@ const state = {
 /**
  * Loads settings from Chrome storage
  * Uses centralized utility functions for type safety
+ * Includes error handling and initialization retry logic
  */
 function loadSettings(): void {
     chrome.storage.sync.get([
@@ -64,6 +65,14 @@ function loadSettings(): void {
         'breakInterval',
         'soundEnabled'
     ], (result: StorageResult) => {
+        // Handle storage errors
+        if (chrome.runtime.lastError) {
+            console.error('[Anti-Doom Scroll] Failed to load settings:', chrome.runtime.lastError);
+            // Retry after a delay
+            setTimeout(loadSettings, 2000);
+            return;
+        }
+
         state.enabled = safeBoolean(result.enabled, true);
         state.enabledSites = normalizeEnabledSites(result.enabledSites);
         state.timeLimit = safeNumber(result.timeLimit);
@@ -196,8 +205,17 @@ function isInMediaView(): boolean {
 /**
  * Updates session duration and enforces limits
  * Called periodically and on scroll attempts
+ * Properly tracks time per site with navigation handling
  */
 function updateSessionTracking(): void {
+    // Only track if we're in a media view
+    if (!isInMediaView()) {
+        // Reset session if we're not in a media view
+        state.sessionStartTime = null;
+        state.sessionDuration = 0;
+        return;
+    }
+
     // Initialize session start time
     if (!state.sessionStartTime) {
         state.sessionStartTime = Date.now();
@@ -213,6 +231,11 @@ function updateSessionTracking(): void {
             type: 'updateAnalytics',
             site: site,
             duration: state.sessionDuration
+        }, () => {
+            // Ignore errors from closed message ports (extension reload, etc.)
+            if (chrome.runtime.lastError) {
+                console.debug('[Anti-Doom Scroll] Message sending failed:', chrome.runtime.lastError.message);
+            }
         });
     }
 
@@ -294,6 +317,7 @@ function playBlockSound(): void {
 /**
  * Blocks scroll events (wheel, touch, scroll)
  * Centralized handler for all scroll-related events
+ * Includes throttling to prevent notification spam
  */
 function blockScroll(e: Event): boolean | void {
     if (!state.enabled || !isInMediaView() || isSnoozeActive()) return;
@@ -308,13 +332,18 @@ function blockScroll(e: Event): boolean | void {
 
         state.blockedScrollAttempts++;
 
-        // Notify background of block attempt
-        chrome.runtime.sendMessage({ type: 'blockAttempt' });
+        // Notify background of block attempt (with error handling)
+        chrome.runtime.sendMessage({ type: 'blockAttempt' }, () => {
+            // Silently handle message port errors
+            if (chrome.runtime.lastError) {
+                console.debug('[Anti-Doom Scroll] Background message failed:', chrome.runtime.lastError.message);
+            }
+        });
 
         // Play sound feedback
         playBlockSound();
 
-        // Show notification on first block
+        // Show notification on first block (throttled to prevent spam)
         if (state.blockedScrollAttempts === 1) {
             showNotification();
         }
@@ -325,20 +354,25 @@ function blockScroll(e: Event): boolean | void {
 
 /**
  * Blocks keyboard navigation (arrow keys, page up/down)
+ * Prevents scrolling via keyboard shortcuts
  */
 function blockKeyboard(e: KeyboardEvent): boolean | void {
     if (!state.enabled || !isInMediaView() || isSnoozeActive()) return;
 
     // Block navigation keys
-    const blockedKeys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'End', 'Home'];
-    if (blockedKeys.includes(e.key)) {
+    const blockedKeys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'End', 'Home', 'Space'];
+    if (blockedKeys.includes(e.key) || (e.key === ' ')) {
         e.preventDefault();
         e.stopPropagation();
 
         state.blockedScrollAttempts++;
 
-        // Notify background of block attempt
-        chrome.runtime.sendMessage({ type: 'blockAttempt' });
+        // Notify background of block attempt (with error handling)
+        chrome.runtime.sendMessage({ type: 'blockAttempt' }, () => {
+            if (chrome.runtime.lastError) {
+                console.debug('[Anti-Doom Scroll] Background message failed:', chrome.runtime.lastError.message);
+            }
+        });
 
         return false;
     }
@@ -350,13 +384,14 @@ function blockKeyboard(e: KeyboardEvent): boolean | void {
 
 /**
  * Creates and displays main block notification with snooze option
+ * Optimized to prevent duplicate notifications and reduce DOM operations
  */
 function showNotification(): void {
     // Prevent duplicate notifications
     const existing = document.getElementById('anti-doom-scroll-notification');
     if (existing) return;
 
-    // Create notification container
+    // Create notification container with inline styles only
     const notification = document.createElement('div');
     notification.id = 'anti-doom-scroll-notification';
     notification.innerHTML = `
@@ -374,7 +409,7 @@ function showNotification(): void {
       font-size: 16px;
       text-align: center;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      animation: fadeIn 0.3s ease-in;
+      animation: adsFadeIn 0.3s ease-in;
       max-width: 400px;
     ">
       <div style="font-size: 48px; margin-bottom: 10px;">🛑</div>
@@ -404,15 +439,18 @@ function showNotification(): void {
     </div>
   `;
 
-    // Add CSS animation
-    const style = document.createElement('style');
-    style.textContent = `
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    // Add CSS animation (only once globally)
+    if (!document.getElementById('ads-notification-style')) {
+        const style = document.createElement('style');
+        style.id = 'ads-notification-style';
+        style.textContent = `
+      @keyframes adsFadeIn {
+        from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      }
+    `;
+        document.head.appendChild(style);
     }
-  `;
-    document.head.appendChild(style);
 
     document.body.appendChild(notification);
 
@@ -423,7 +461,7 @@ function showNotification(): void {
             state.snoozedUntil = Date.now() + SNOOZE_DURATION;
             notification.remove();
             showSnoozeConfirmation();
-        });
+        }, { once: true }); // Prevent multiple listeners
     }
 
     // Close button handler
@@ -431,7 +469,7 @@ function showNotification(): void {
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
             notification.remove();
-        });
+        }, { once: true }); // Prevent multiple listeners
     }
 }
 
@@ -543,6 +581,7 @@ function showBreakReminder(): void {
 /**
  * Initializes the content script
  * Sets up event listeners and observers
+ * Optimized to prevent duplicate initialization
  */
 function init(): void {
     // Prevent duplicate initialization
@@ -557,7 +596,7 @@ function init(): void {
     window.addEventListener('scroll', blockScroll, { passive: false, capture: true });
     document.addEventListener('keydown', blockKeyboard, { passive: false, capture: true });
 
-    // Monitor URL changes to reset session state
+    // Monitor URL changes to reset session state (optimized to watch only URL changes)
     let lastUrl = location.href;
     state.urlObserver = new MutationObserver(() => {
         const url = location.href;
@@ -567,29 +606,43 @@ function init(): void {
             state.blockedScrollAttempts = 0;
             state.sessionStartTime = null;
             state.sessionDuration = 0;
+
+            // Remove any lingering notifications
+            const notification = document.getElementById('anti-doom-scroll-notification');
+            if (notification) notification.remove();
         }
     });
 
-    state.urlObserver.observe(document, { subtree: true, childList: true });
+    // Observe only the head and title for URL changes (more efficient than watching entire document)
+    const titleNode = document.querySelector('title');
+    if (titleNode) {
+        state.urlObserver.observe(titleNode, { subtree: true, childList: true, characterData: true });
+    }
+    // Fallback: observe body with minimal config if title not available
+    state.urlObserver.observe(document.body, { childList: true, subtree: false });
 
     // Start periodic session tracking
     state.sessionUpdateInterval = setInterval(updateSessionTracking, SESSION_UPDATE_INTERVAL);
+
+    // Initial session tracking
+    updateSessionTracking();
 }
 
 /**
  * Cleans up the content script
  * Removes event listeners and observers to prevent memory leaks
+ * Properly removes all notifications and intervals
  */
 function cleanup(): void {
     console.log('[Anti-Doom Scroll] Cleaning up content script');
 
     state.initialized = false;
 
-    // Remove event listeners
-    document.removeEventListener('wheel', blockScroll, { capture: true });
-    document.removeEventListener('touchmove', blockScroll, { capture: true });
-    window.removeEventListener('scroll', blockScroll, { capture: true });
-    document.removeEventListener('keydown', blockKeyboard, { capture: true });
+    // Remove event listeners with exact same parameters as addEventListener
+    document.removeEventListener('wheel', blockScroll, { capture: true } as EventListenerOptions);
+    document.removeEventListener('touchmove', blockScroll, { capture: true } as EventListenerOptions);
+    window.removeEventListener('scroll', blockScroll, { capture: true } as EventListenerOptions);
+    document.removeEventListener('keydown', blockKeyboard, { capture: true } as EventListenerOptions);
 
     // Disconnect and clean up observer
     if (state.urlObserver) {
@@ -606,6 +659,14 @@ function cleanup(): void {
     // Reset session state
     state.sessionStartTime = null;
     state.sessionDuration = 0;
+    state.blockedScrollAttempts = 0;
+
+    // Remove any active notifications
+    const notification = document.getElementById('anti-doom-scroll-notification');
+    if (notification) notification.remove();
+
+    const timeLimitNotification = document.getElementById('time-limit-notification');
+    if (timeLimitNotification) timeLimitNotification.remove();
 }
 
 // ============================================
