@@ -1,0 +1,36 @@
+{
+  "name": "anti-doom-scroll",
+  "version": "1.0.0",
+  "description": "A powerful browser extension that helps you break free from endless social media scrolling by blocking scroll functionality when viewing individual posts, while still allowing you to browse freely.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noamaanMulla-03/anti-doom-scroll.git"
+  },
+  "keywords": [
+    "chrome-extension",
+    "productivity",
+    "social-media",
+    "focus",
+    "typescript",
+    "vite"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/noamaanMulla-03/anti-doom-scroll/issues"
+  },
+  "homepage": "https://github.com/noamaanMulla-03/anti-doom-scroll#readme",
+  "devDependencies": {
+    "@types/chrome": "^0.1.36",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-web-extension": "^4.5.0"
+  }
+}

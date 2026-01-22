@@ -8,7 +8,7 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.ts"
   },
   "content_scripts": [
     {
@@ -21,7 +21,7 @@
         "*://*.x.com/*",
         "*://*.reddit.com/*"
       ],
-      "js": ["content.js"],
+      "js": ["content.ts"],
       "run_at": "document_start"
     }
   ],
