@@ -1,6 +1,10 @@
 # 🛑 Anti-Doom Scroll
 
-A powerful browser extension that helps you break free from endless social media scrolling by blocking scroll functionality when viewing individual posts, while still allowing you to browse freely.
+A powerful **multi-browser extension** that helps you break free from endless social media scrolling by blocking scroll functionality when viewing individual posts, while still allowing you to browse freely.
+
+**✅ Works on Chrome • Firefox • Edge • Brave • Opera**
+
+---
 
 ## 🌟 Features
 
@@ -28,9 +32,13 @@ A powerful browser extension that helps you break free from endless social media
 
 ## 📦 Installation
 
+### Browser Support
+- ✅ **Chrome** (and all Chromium-based browsers: Edge, Brave, Opera, Vivaldi)
+- ✅ **Firefox** (version 109+)
+
 ### Prerequisites
 - Node.js 16+ and npm installed
-- Chrome browser
+- Your preferred browser (Chrome, Firefox, Edge, Brave, etc.)
 
 ### Build and Install
 
@@ -42,16 +50,38 @@ A powerful browser extension that helps you break free from endless social media
    ```
 
 2. **Build the extension**
+   
+   For Chrome/Edge/Brave/Opera:
    ```bash
-   npm run build
+   npm run build:chrome
    ```
-   This creates a `dist/` folder with the compiled extension.
+   Creates **`dist-chrome/`** folder
+   
+   For Firefox:
+   ```bash
+   npm run build:firefox
+   ```
+   Creates **`dist-firefox/`** folder
+   
+   Or build for all browsers:
+   ```bash
+   npm run build:all
+   ```
+   Creates both **`dist-chrome/`** and **`dist-firefox/`** folders
 
-3. **Load in Chrome**
-   - Open Chrome and go to `chrome://extensions/`
+3. **Load in your browser**
+   
+   **Chrome/Edge/Brave/Opera:**
+   - Open extensions page (e.g., `chrome://extensions/`)
    - Enable **"Developer mode"** (toggle in top right)
    - Click **"Load unpacked"**
-   - Select the **`dist`** folder from your project
+   - Select the **`dist-chrome`** folder
+   - Done! 🎉
+   
+   **Firefox:**
+   - Open `about:debugging#/runtime/this-firefox`
+   - Click **"Load Temporary Add-on..."**
+   - Select the **`manifest.json`** file in the **`dist-firefox/`** folder
    - Done! 🎉
 
 4. **First Use**
@@ -61,7 +91,9 @@ A powerful browser extension that helps you break free from endless social media
 
 For detailed instructions, see [INSTALLATION.md](INSTALLATION.md)
 
-### From Chrome Web Store (Coming Soon)
+### From Extension Stores (Coming Soon)
+- Chrome Web Store
+- Firefox Add-ons
 _Extension will be available on the Chrome Web Store soon_
 
 ## 🚀 Usage

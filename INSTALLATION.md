@@ -1,28 +1,78 @@
-# Installing Anti-Doom Scroll Chrome Extension
+# Installing Anti-Doom Scroll Browser Extension
+
+## Multi-Browser Support ✅
+
+This extension works on:
+- ✅ **Chrome** (and Chromium-based browsers: Edge, Brave, Opera)
+- ✅ **Firefox** (109+)
+
+---
 
 ## Installation Steps
 
-### Step 1: Build the Extension
+### For Chrome / Edge / Brave / Opera
+
+#### Step 1: Build the Extension
 ```bash
 npm install  # Install dependencies (if not done already)
-npm run build  # Build the extension
+npm run build:chrome  # Build for Chrome/Chromium browsers
 ```
 
-This will create a `dist/` folder with the built extension.
+This creates a **`dist-chrome/`** folder with the built extension.
 
-### Step 2: Load Extension in Chrome
+#### Step 2: Load Extension
 
-1. Open Chrome and go to: **`chrome://extensions/`**
+**Chrome / Edge / Brave:**
+1. Open your browser and go to the extensions page:
+   - Chrome: `chrome://extensions/`
+   - Edge: `edge://extensions/`
+   - Brave: `brave://extensions/`
+   - Opera: `opera://extensions/`
 2. Enable **"Developer mode"** (toggle in top right corner)
 3. Click **"Load unpacked"**
-4. Navigate to your project folder and select the **`dist`** folder
+4. Navigate to your project folder and select the **`dist-chrome`** folder
 5. The extension is now installed! 🎉
 
-### Step 3: Start Using
+---
 
-- Click the extension icon in your Chrome toolbar to open settings
-- On first install, an onboarding page will guide you through setup
-- Visit any supported social media site and try scrolling on a post - it will be blocked!
+### For Firefox
+
+#### Step 1: Build the Extension
+```bash
+npm install  # Install dependencies (if not done already)
+npm run build:firefox  # Build for Firefox
+```
+
+This creates a **`dist-firefox/`** folder with the built extension.
+
+#### Step 2: Load Extension
+
+**Temporary Installation (for development/testing):**
+1. Open Firefox and go to: `about:debugging#/runtime/this-firefox`
+2. Click **"Load Temporary Add-on..."**
+3. Navigate to your **`dist-firefox/`** folder and select the **`manifest.json`** file
+4. The extension is now installed! 🎉
+
+**Note**: Temporary extensions are removed when Firefox closes.
+
+**Permanent Installation (requires signing):**
+- For permanent installation, the extension needs to be signed by Mozilla
+- See [Firefox extension signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/)
+
+---
+
+## Building for All Browsers
+
+To build for both Chrome and Firefox at once:
+```bash
+npm run build:all
+```
+
+This creates **two separate folders**:
+- **`dist-chrome/`** - Chrome/Edge/Brave/Opera build
+- **`dist-firefox/`** - Firefox build
+
+Load the appropriate folder in your target browser.
 
 ---
 

@@ -1,14 +1,20 @@
 {
   "manifest_version": 3,
   "name": "Anti-Doom Scroll",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "Prevents endless scrolling through social media posts",
   "permissions": ["storage", "alarms"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "anti-doom-scroll@noamaan.dev",
+      "strict_min_version": "109.0"
+    }
+  },
   "background": {
-    "service_worker": "src/background.ts",
+    "service_worker": "src/background.js",
     "type": "module"
   },
   "content_scripts": [

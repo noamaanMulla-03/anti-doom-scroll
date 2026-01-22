@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode development",
-    "build": "tsc && vite build && cp -r src/icons dist/src/",
+    "build": "npm run build:chrome",
+    "build:chrome": "tsc && TARGET_BROWSER=chrome BUILD_DIR=dist-chrome vite build && cp -r src/icons dist-chrome/src/",
+    "build:firefox": "tsc && TARGET_BROWSER=firefox BUILD_DIR=dist-firefox vite build && cp -r src/icons dist-firefox/src/",
+    "build:all": "npm run build:chrome && npm run build:firefox",
     "preview": "vite preview",
     "type-check": "tsc --noEmit"
   },
