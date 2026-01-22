@@ -28,24 +28,38 @@ A powerful browser extension that helps you break free from endless social media
 
 ## 📦 Installation
 
-### From Source (Development)
+### Prerequisites
+- Node.js 16+ and npm installed
+- Chrome browser
 
-1. **Clone the repository**
+### Build and Install
+
+1. **Clone and install dependencies**
    ```bash
-   git clone https://github.com/yourusername/anti-doom-scroll.git
+   git clone https://github.com/noamaanMulla-03/anti-doom-scroll.git
    cd anti-doom-scroll
+   npm install
    ```
 
-2. **Load in Chrome/Edge**
-   - Open `chrome://extensions/`
-   - Enable "Developer mode" (top right)
-   - Click "Load unpacked"
-   - Select the `anti-doom-scroll` folder
+2. **Build the extension**
+   ```bash
+   npm run build
+   ```
+   This creates a `dist/` folder with the compiled extension.
 
-3. **Load in Firefox**
-   - Open `about:debugging#/runtime/this-firefox`
-   - Click "Load Temporary Add-on"
-   - Select the `manifest.json` file
+3. **Load in Chrome**
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable **"Developer mode"** (toggle in top right)
+   - Click **"Load unpacked"**
+   - Select the **`dist`** folder from your project
+   - Done! 🎉
+
+4. **First Use**
+   - Click the extension icon in your toolbar
+   - Complete the onboarding setup
+   - Visit any supported social media site and enjoy distraction-free browsing!
+
+For detailed instructions, see [INSTALLATION.md](INSTALLATION.md)
 
 ### From Chrome Web Store (Coming Soon)
 _Extension will be available on the Chrome Web Store soon_

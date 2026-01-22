@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import webExtension from 'vite-plugin-web-extension';
+import { resolve } from 'path';
 
 export default defineConfig({
     plugins: [
@@ -7,15 +8,21 @@ export default defineConfig({
             manifest: './src/manifest.json',
             disableAutoLaunch: true,
             browser: 'chrome',
+            additionalInputs: ['src/onboarding.html'],
         }),
     ],
     build: {
         outDir: 'dist',
         emptyOutDir: true,
+        rollupOptions: {
+            output: {
+                inlineDynamicImports: false,
+            },
+        },
     },
     resolve: {
         alias: {
-            '@': '/src',
+            '@': resolve(__dirname, './src'),
         },
     },
 });
